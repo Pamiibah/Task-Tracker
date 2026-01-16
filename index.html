@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Tracker Pro - Complete</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .trend {
+            font-size: 0.85rem;
+            color: #4caf50;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .chart-container h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .main-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .filters-section {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .filters-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .filter-chip:hover {
+            background: #f0f0f0;
+        }
+
+        .filter-chip.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"], input[type="date"], select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        .btn-secondary {
+            background: #9e9e9e;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #757575;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .task-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .task-card.archived {
+            opacity: 0.7;
+            border-color: #bdbdbd;
+        }
+
+        .task-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .task-header.archived {
+            background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);
+        }
+
+        .task-header h3 {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .task-header .toggle-icon {
+            transition: transform 0.3s;
+        }
+
+        .task-header .toggle-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-delete {
+            background: #ef5350;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+
+        .btn-restore {
+            background: #26a69a;
+            color: white;
+        }
+
+        .btn-restore:hover {
+            background: #00897b;
+        }
+
+        .task-progress {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .progress-info {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .progress-stat {
+            text-align: center;
+        }
+
+        .progress-stat .label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .progress-stat .value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .progress-bar-container {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            transition: width 0.5s ease;
+        }
+
+        .activities-container {
+            display: none;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .activities-container.expanded {
+            display: block;
+        }
+
+        .activity-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px dashed #e0e0e0;
+        }
+
+        .activity-form h4 {
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .comments-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px solid #e3f2fd;
+        }
+
+        .comments-section h4 {
+            margin-bottom: 15px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comment-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .comment-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .comment-date {
+            color: #999;
+        }
+
+        .comment-text {
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .comment-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .comment-input-group textarea {
+            flex: 1;
+        }
+
+        .activity-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .activity-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .activity-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .activity-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+        }
+
+        .activity-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-not-started {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-in-progress {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .status-completed {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-overdue {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .days-indicator {
+            font-weight: 600;
+        }
+
+        .days-left {
+            color: #4caf50;
+        }
+
+        .days-overdue {
+            color: #ef5350;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .delete-activity {
+            background: #ef5350;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .delete-activity:hover {
+            background: #d32f2f;
+        }
+
+        .team-performance {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .team-member {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .team-member:last-child {
+            border-bottom: none;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .member-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .upcoming-deadlines {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .deadline-item {
+            padding: 15px;
+            border-left: 4px solid #ef5350;
+            background: #fafafa;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .deadline-item.soon {
+            border-left-color: #ff9800;
+        }
+
+        .deadline-item.normal {
+            border-left-color: #4caf50;
+        }
+
+        .archive-badge {
+            background: #9e9e9e;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid, .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .activity-table {
+                overflow-x: auto;
+            }
+
+            .activity-table table {
+                min-width: 1000px;
+            }
+
+            .comment-input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Task Tracker Pro</h1>
+            <p>Complete project management with dashboard, filters, comments & archive</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="tab-btn" onclick="switchTab('tasks')">📝 Tasks</button>
+            <button class="tab-btn" onclick="switchTab('archive')">🗄️ Archive</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <h3>Total Tasks</h3>
+                    <div class="number" id="dashTotalTasks">0</div>
+                    <div class="trend">📈 Active projects</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Activities</h3>
+                    <div class="number" id="dashTotalActivities">0</div>
+                    <div class="trend">📋 Across all tasks</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Completion Rate</h3>
+                    <div class="number" id="dashCompletionRate">0%</div>
+                    <div class="trend" id="completionTrend">🎯 Overall progress</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Overdue Activities</h3>
+                    <div class="number" id="dashOverdue">0</div>
+                    <div class="trend negative" id="overdueTrend">⚠️ Needs attention</div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-container">
+                    <h3>Task Status Overview</h3>
+                    <canvas id="statusChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Activities by Status</h3>
+                    <canvas id="activityPieChart"></canvas>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-container">
+                    <h3>Team Workload Distribution</h3>
+                    <canvas id="workloadChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Completion Trend</h3>
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="team-performance">
+                    <h3 style="margin-bottom: 20px;">Team Performance</h3>
+                    <div id="teamPerformanceList"></div>
+                </div>
+                <div class="upcoming-deadlines">
+                    <h3 style="margin-bottom: 20px;">Upcoming Deadlines</h3>
+                    <div id="upcomingDeadlinesList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks Tab -->
+        <div id="tasks" class="tab-content">
+            <div class="main-panel">
+                <div class="controls">
+                    <h3 style="margin-bottom: 15px; color: #333;">Add New Task</h3>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Task Name</label>
+                            <input type="text" id="taskNameInput" placeholder="Enter task name...">
+                        </div>
+                        <button class="btn btn-primary" onclick="addTask()" style="align-self: flex-end;">Create Task</button>
+                    </div>
+                </div>
+
+                <div class="filters-section">
+                    <h3>🔍 Filters</h3>
+                    <div class="filters-grid">
+                        <div class="input-group">
+                            <label>Search Tasks</label>
+                            <input type="text" id="searchInput" placeholder="Search by task name..." onkeyup="applyFilters()">
+                        </div>
+                        <div class="input-group">
+                            <label>Filter by Person</label>
+                            <select id="personFilter" onchange="applyFilters()">
+                                <option value="">All Team Members</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Filter by Status</label>
+                            <select id="statusFilter" onchange="applyFilters()">
+                                <option value="">All Statuses</option>
+                                <option value="not-started">Not Started</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="overdue">Overdue</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Sort By</label>
+                            <select id="sortFilter" onchange="applyFilters()">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                                <option value="progress-high">Progress (High to Low)</option>
+                                <option value="progress-low">Progress (Low to High)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="filter-chip active" onclick="quickFilter('all')">All Tasks</button>
+                        <button class="filter-chip" onclick="quickFilter('active')">Active Only</button>
+                        <button class="filter-chip" onclick="quickFilter('completed')">Completed</button>
+                        <button class="filter-chip" onclick="quickFilter('overdue')">Overdue</button>
+                        <button class="btn-secondary btn-small" onclick="clearFilters()">Clear Filters</button>
+                    </div>
+                </div>
+
+                <div id="taskList" class="task-list">
+                    <div class="empty-state">
+                        <h2>No tasks yet</h2>
+                        <p>Create your first task to get started!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Archive Tab -->
+        <div id="archive" class="tab-content">
+            <div class="main-panel">
+                <h2 style="margin-bottom: 20px;">🗄️ Archived Tasks</h2>
+                <div id="archiveList" class="task-list">
+                    <div class="empty-state">
+                        <h2>No archived tasks</h2>
+                        <p>Deleted tasks will appear here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('tasksComplete')) || [];
+        let archivedTasks = JSON.parse(localStorage.getItem('archivedTasks')) || [];
+        let charts = {};
+        let currentQuickFilter = 'all';
+
+        function saveTasks() {
+            localStorage.setItem('tasksComplete', JSON.stringify(tasks));
+            localStorage.setItem('archivedTasks', JSON.stringify(archivedTasks));
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'dashboard') {
+                updateDashboard();
+            } else if (tabName === 'archive') {
+                renderArchive();
+            }
+        }
+
+        function addTask() {
+            const input = document.getElementById('taskNameInput');
+            const taskName = input.value.trim();
+
+            if (taskName === '') {
+                alert('Please enter a task name!');
+                return;
+            }
+
+            const task = {
+                id: Date.now(),
+                name: taskName,
+                activities: [],
+                comments: [],
+                createdAt: new Date().toISOString()
+            };
+
+            tasks.push(task);
+            input.value = '';
+            saveTasks();
+            applyFilters();
+            updateDashboard();
+            updatePersonFilter();
+        }
+
+        function deleteTask(taskId) {
+            if (confirm('Archive this task? You can restore it from the Archive tab.')) {
+                const task = tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.archivedAt = new Date().toISOString();
+                    archivedTasks.push(task);
+                    tasks = tasks.filter(t => t.id !== taskId);
+                    saveTasks();
+                    applyFilters();
+                    updateDashboard();
+                }
+            }
+        }
+
+        function restoreTask(taskId) {
+            if (confirm('Restore this task to active tasks?')) {
+                const task = archivedTasks.find(t => t.id === taskId);
+                if (task) {
+                    delete task.archivedAt;
+                    tasks.push(task);
+                    archivedTasks = archivedTasks.filter(t => t.id !== taskId);
+                    saveTasks();
+                    renderArchive();
+                    updateDashboard();
+                }
+            }
+        }
+
+        function permanentlyDeleteTask(taskId) {
+            if (confirm('Permanently delete this task? This action cannot be undone!')) {
+                archivedTasks = archivedTasks.filter(t => t.id !== taskId);
+                saveTasks();
+                renderArchive();
+            }
+        }
+
+        function toggleTask(taskId) {
+            const taskCard = document.getElementById(`task-${taskId}`);
+            const container = taskCard.querySelector('.activities-container');
+            const icon = taskCard.querySelector('.toggle-icon');
+            
+            container.classList.toggle('expanded');
+            icon.classList.toggle('expanded');
+        }
+
+        function calculateDays(assignedDate, deadline) {
+            if (!assignedDate || !deadline) return { daysLeft: 0, daysOverdue: 0, duration: 0 };
+
+            const assigned = new Date(assignedDate);
+            const due = new Date(deadline);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            due.setHours(0, 0, 0, 0);
+            assigned.setHours(0, 0, 0, 0);
+
+            const duration = Math.ceil((due - assigned) / (1000 * 60 * 60 * 24));
+            const daysLeft = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+            const daysOverdue = daysLeft < 0 ? Math.abs(daysLeft) : 0;
+
+            return {
+                daysLeft: daysLeft > 0 ? daysLeft : 0,
+                daysOverdue: daysOverdue,
+                duration: duration
+            };
+        }
+
+        function addActivity(taskId) {
+            const activityName = document.getElementById(`activity-name-${taskId}`).value.trim();
+            const assignedTo = document.getElementById(`assigned-to-${taskId}`).value.trim();
+            const assignedDate = document.getElementById(`assigned-date-${taskId}`).value;
+            const deadline = document.getElementById(`deadline-${taskId}`).value;
+            const status = document.getElementById(`status-${taskId}`).value;
+
+            if (!activityName || !assignedTo || !assignedDate || !deadline) {
+                alert('Please fill in all fields!');
+                return;
+            }
+
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            const days = calculateDays(assignedDate, deadline);
+
+            const activity = {
+                id: Date.now(),
+                name: activityName,
+                assignedTo: assignedTo,
+                assignedDate: assignedDate,
+                deadline: deadline,
+                status: status,
+                statusPercent: status === 'completed' ? 100 : (status === 'in-progress' ? 50 : 0),
+                ...days
+            };
+
+            task.activities.push(activity);
+            
+            // Clear form
+            document.getElementById(`activity-name-${taskId}`).value = '';
+            document.getElementById(`assigned-to-${taskId}`).value = '';
+            document.getElementById(`assigned-date-${taskId}`).value = '';
+            document.getElementById(`deadline-${taskId}`).value = '';
+            document.getElementById(`status-${taskId}`).value = 'not-started';
+
+            saveTasks();
+            applyFilters();
+            updateDashboard();
+            updatePersonFilter();
+        }
+
+        function deleteActivity(taskId, activityId) {
+            if (confirm('Are you sure you want to delete this activity?')) {
+                const task = tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.activities = task.activities.filter(a => a.id !== activityId);
+                    saveTasks();
+                    applyFilters();
+                    updateDashboard();
+                }
+            }
+        }
+
+        function updateActivityStatus(taskId, activityId, newStatus) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                const activity = task.activities.find(a => a.id === activityId);
+                if (activity) {
+                    activity.status = newStatus;
+                    activity.statusPercent = newStatus === 'completed' ? 100 : (newStatus === 'in-progress' ? 50 : 0);
+                    saveTasks();
+                    applyFilters();
+                    updateDashboard();
+                }
+            }
+        }
+
+        function addComment(taskId) {
+            const textarea = document.getElementById(`comment-text-${taskId}`);
+            const commentText = textarea.value.trim();
+
+            if (!commentText) {
+                alert('Please enter a comment!');
+                return;
+            }
+
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            const comment = {
+                id: Date.now(),
+                text: commentText,
+                author: 'User', // You can make this dynamic
+                timestamp: new Date().toISOString()
+            };
+
+            if (!task.comments) task.comments = [];
+            task.comments.push(comment);
+            
+            textarea.value = '';
+            saveTasks();
+            applyFilters();
+        }
+
+        function calculateTaskProgress(task) {
+            if (task.activities.length === 0) return 0;
+            const totalPercent = task.activities.reduce((sum, act) => sum + act.statusPercent, 0);
+            return Math.round(totalPercent / task.activities.length);
+        }
+
+        function updatePersonFilter() {
+            const personFilter = document.getElementById('personFilter');
+            const allActivities = tasks.flatMap(t => t.activities);
+            const uniquePeople = [...new Set(allActivities.map(a => a.assignedTo))];
+            
+            const currentValue = personFilter.value;
+            personFilter.innerHTML = '<option value="">All Team Members</option>';
+            uniquePeople.forEach(person => {
+                const option = document.createElement('option');
+                option.value = person;
+                option.textContent = person;
+                personFilter.appendChild(option);
+            });
+            personFilter.value = currentValue;
+        }
+
+        function quickFilter(type) {
+            currentQuickFilter = type;
+            
+            // Update active button
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            applyFilters();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('personFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('sortFilter').value = 'newest';
+            currentQuickFilter = 'all';
+            
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            document.querySelector('.filter-chip').classList.add('active');
+            
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const personFilter = document.getElementById('personFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const sortFilter = document.getElementById('sortFilter').value;
+
+            let filteredTasks = [...tasks];
+
+            // Search filter
+            if (searchTerm) {
+                filteredTasks = filteredTasks.filter(task => 
+                    task.name.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Person filter
+            if (personFilter) {
+                filteredTasks = filteredTasks.filter(task =>
+                    task.activities.some(a => a.assignedTo === personFilter)
+                );
+            }
+
+            // Status filter
+            if (statusFilter) {
+                filteredTasks = filteredTasks.filter(task => {
+                    if (statusFilter === 'overdue') {
+                        return task.activities.some(a => {
+                            const days = calculateDays(a.assignedDate, a.deadline);
+                            return days.daysOverdue > 0 && a.status !== 'completed';
+                        });
+                    } else {
+                        return task.activities.some(a => a.status === statusFilter);
+                    }
+                });
+            }
+
+            // Quick filter
+            if (currentQuickFilter === 'active') {
+                filteredTasks = filteredTasks.filter(task => 
+                    calculateTaskProgress(task) < 100
+                );
+            } else if (currentQuickFilter === 'completed') {
+                filteredTasks = filteredTasks.filter(task => 
+                    calculateTaskProgress(task) === 100
+                );
+            } else if (currentQuickFilter === 'overdue') {
+                filteredTasks = filteredTasks.filter(task =>
+                    task.activities.some(a => {
+                        const days = calculateDays(a.assignedDate, a.deadline);
+                        return days.daysOverdue > 0 && a.status !== 'completed';
+                    })
+                );
+            }
+
+            // Sort
+            if (sortFilter === 'newest') {
+                filteredTasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            } else if (sortFilter === 'oldest') {
+                filteredTasks.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            } else if (sortFilter === 'progress-high') {
+                filteredTasks.sort((a, b) => calculateTaskProgress(b) - calculateTaskProgress(a));
+            } else if (sortFilter === 'progress-low') {
+                filteredTasks.sort((a, b) => calculateTaskProgress(a) - calculateTaskProgress(b));
+            }
+
+            renderTasks(filteredTasks);
+        }
+
+        function renderTasks(tasksToRender = tasks) {
+            const taskList = document.getElementById('taskList');
+
+            if (tasksToRender.length === 0) {
+                taskList.innerHTML = `
+                    <div class="empty-state">
+                        <h2>No tasks found</h2>
+                        <p>Try adjusting your filters or create a new task</p>
+                    </div>
+                `;
+                return;
+            }
+
+            taskList.innerHTML = tasksToRender.map(task => {
+                const progress = calculateTaskProgress(task);
+                const completedCount = task.activities.filter(a => a.status === 'completed').length;
+                const totalCount = task.activities.length;
+                const commentsCount = task.comments ? task.comments.length : 0;
+
+                return `
+                    <div class="task-card" id="task-${task.id}">
+                        <div class="task-header" onclick="toggleTask(${task.id})">
+                            <h3>
+                                <span class="toggle-icon">▶</span>
+                                ${task.name}
+                                ${commentsCount > 0 ? `<span style="background: rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;">💬 ${commentsCount}</span>` : ''}
+                            </h3>
+                            <div class="task-actions" onclick="event.stopPropagation()">
+                                <button class="btn-small btn-delete" onclick="deleteTask(${task.id})">Archive</button>
+                            </div>
+                        </div>
+
+                        <div class="task-progress">
+                            <div class="progress-info">
+                                <div class="progress-stat">
+                                    <div class="label">Activities</div>
+                                    <div class="value">${totalCount}</div>
+                                </div>
+                                <div class="progress-stat">
+                                    <div class="label">Completed</div>
+                                    <div class="value">${completedCount}</div>
+                                </div>
+                                <div class="progress-stat">
+                                    <div class="label">Progress</div>
+                                    <div class="value">${progress}%</div>
+                                </div>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="activities-container">
+                            <div class="comments-section">
+                                <h4>💬 Comments (${commentsCount})</h4>
+                                <div class="comment-list">
+                                    ${task.comments && task.comments.length > 0 ? 
+                                        task.comments.map(comment => `
+                                            <div class="comment-item">
+                                                <div class="comment-header">
+                                                    <span class="comment-author">${comment.author}</span>
+                                                    <span class="comment-date">${new Date(comment.timestamp).toLocaleString()}</span>
+                                                </div>
+                                                <div class="comment-text">${comment.text}</div>
+                                            </div>
+                                        `).join('') : 
+                                        '<p style="color: #999; text-align: center; padding: 20px;">No comments yet</p>'
+                                    }
+                                </div>
+                                <div class="comment-input-group">
+                                    <textarea id="comment-text-${task.id}" placeholder="Add a comment..."></textarea>
+                                    <button class="btn btn-success" onclick="addComment(${task.id})">Add Comment</button>
+                                </div>
+                            </div>
+
+                            <div class="activity-form">
+                                <h4>Add New Activity</h4>
+                                <div class="form-grid">
+                                    <div class="input-group">
+                                        <label>Activity Name</label>
+                                        <input type="text" id="activity-name-${task.id}" placeholder="Activity name">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Assigned To</label>
+                                        <input type="text" id="assigned-to-${task.id}" placeholder="Person name">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Assigned Date</label>
+                                        <input type="date" id="assigned-date-${task.id}">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Deadline</label>
+                                        <input type="date" id="deadline-${task.id}">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Status</label>
+                                        <select id="status-${task.id}">
+                                            <option value="not-started">Not Started</option>
+                                            <option value="in-progress">In Progress</option>
+                                            <option value="completed">Completed</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button class="btn btn-success" onclick="addActivity(${task.id})">Add Activity</button>
+                            </div>
+
+                            ${task.activities.length > 0 ? `
+                                <div class="activity-table">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Activity</th>
+                                                <th>Status</th>
+                                                <th>Assigned To</th>
+                                                <th>Assigned Date</th>
+                                                <th>Deadline</th>
+                                                <th>Days Left</th>
+                                                <th>Days Overdue</th>
+                                                <th>Duration (days)</th>
+                                                <th>Status %</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${task.activities.map(activity => {
+                                                const days = calculateDays(activity.assignedDate, activity.deadline);
+                                                const actualStatus = days.daysOverdue > 0 && activity.status !== 'completed' ? 'overdue' : activity.status;
+                                                
+                                                return `
+                                                    <tr>
+                                                        <td><strong>${activity.name}</strong></td>
+                                                        <td>
+                                                            <select class="status-badge status-${actualStatus}" 
+                                                                    onchange="updateActivityStatus(${task.id}, ${activity.id}, this.value)"
+                                                                    style="border: none; font-weight: 600;">
+                                                                <option value="not-started" ${activity.status === 'not-started' ? 'selected' : ''}>Not Started</option>
+                                                                <option value="in-progress" ${activity.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                                                                <option value="completed" ${activity.status === 'completed' ? 'selected' : ''}>Completed</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>${activity.assignedTo}</td>
+                                                        <td>${new Date(activity.assignedDate).toLocaleDateString()}</td>
+                                                        <td>${new Date(activity.deadline).toLocaleDateString()}</td>
+                                                        <td class="days-indicator days-left">${days.daysLeft}</td>
+                                                        <td class="days-indicator days-overdue">${days.daysOverdue}</td>
+                                                        <td>${days.duration}</td>
+                                                        <td><strong>${activity.statusPercent}%</strong></td>
+                                                        <td>
+                                                            <button class="delete-activity" onclick="deleteActivity(${task.id}, ${activity.id})">Delete</button>
+                                                        </td>
+                                                    </tr>
+                                                `;
+                                            }).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ` : `
+                                <div class="empty-state">
+                                    <p>No activities yet. Add your first activity above!</p>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderArchive() {
+            const archiveList = document.getElementById('archiveList');
+
+            if (archivedTasks.length === 0) {
+                archiveList.innerHTML = `
+                    <div class="empty-state">
+                        <h2>No archived tasks</h2>
+                        <p>Deleted tasks will appear here</p>
+                    </div>
+                `;
+                return;
+            }
+
+            archiveList.innerHTML = archivedTasks.map(task => {
+                const progress = calculateTaskProgress(task);
+                const archivedDate = new Date(task.archivedAt).toLocaleDateString();
+
+                return `
+                    <div class="task-card archived">
+                        <div class="task-header archived">
+                            <h3>
+                                ${task.name}
+                                <span class="archive-badge">Archived ${archivedDate}</span>
+                            </h3>
+                            <div class="task-actions">
+                                <button class="btn-small btn-restore" onclick="restoreTask(${task.id})">Restore</button>
+                                <button class="btn-small btn-delete" onclick="permanentlyDeleteTask(${task.id})">Delete Forever</button>
+                            </div>
+                        </div>
+                        <div class="task-progress">
+                            <div class="progress-info">
+                                <div class="progress-stat">
+                                    <div class="label">Activities</div>
+                                    <div class="value">${task.activities.length}</div>
+                                </div>
+                                <div class="progress-stat">
+                                    <div class="label">Progress</div>
+                                    <div class="value">${progress}%</div>
+                                </div>
+                                <div class="progress-stat">
+                                    <div class="label">Comments</div>
+                                    <div class="value">${task.comments ? task.comments.length : 0}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateDashboard() {
+            const totalTasks = tasks.length;
+            const allActivities = tasks.flatMap(t => t.activities);
+            const totalActivities = allActivities.length;
+            const completedActivities = allActivities.filter(a => a.status === 'completed').length;
+            const completionRate = totalActivities > 0 ? Math.round((completedActivities / totalActivities) * 100) : 0;
+            const overdueActivities = allActivities.filter(a => {
+                const days = calculateDays(a.assignedDate, a.deadline);
+                return days.daysOverdue > 0 && a.status !== 'completed';
+            }).length;
+
+            document.getElementById('dashTotalTasks').textContent = totalTasks;
+            document.getElementById('dashTotalActivities').textContent = totalActivities;
+            document.getElementById('dashCompletionRate').textContent = completionRate + '%';
+            document.getElementById('dashOverdue').textContent = overdueActivities;
+
+            updateStatusChart();
+            updateActivityPieChart();
+            updateWorkloadChart();
+            updateTrendChart();
+            updateTeamPerformance();
+            updateUpcomingDeadlines();
+        }
+
+        function updateStatusChart() {
+            const ctx = document.getElementById('statusChart');
+            
+            if (charts.statusChart) {
+                charts.statusChart.destroy();
+            }
+
+            const taskStats = tasks.map(task => ({
+                name: task.name.length > 20 ? task.name.substring(0, 20) + '...' : task.name,
+                progress: calculateTaskProgress(task)
+            }));
+
+            charts.statusChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: taskStats.map(t => t.name),
+                    datasets: [{
+                        label: 'Progress %',
+                        data: taskStats.map(t => t.progress),
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateActivityPieChart() {
+            const ctx = document.getElementById('activityPieChart');
+            
+            if (charts.activityPieChart) {
+                charts.activityPieChart.destroy();
+            }
+
+            const allActivities = tasks.flatMap(t => t.activities);
+            const notStarted = allActivities.filter(a => a.status === 'not-started').length;
+            const inProgress = allActivities.filter(a => a.status === 'in-progress').length;
+            const completed = allActivities.filter(a => a.status === 'completed').length;
+
+            charts.activityPieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Not Started', 'In Progress', 'Completed'],
+                    datasets: [{
+                        data: [notStarted, inProgress, completed],
+                        backgroundColor: [
+                            'rgba(33, 150, 243, 0.8)',
+                            'rgba(255, 152, 0, 0.8)',
+                            'rgba(76, 175, 80, 0.8)'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateWorkloadChart() {
+            const ctx = document.getElementById('workloadChart');
+            
+            if (charts.workloadChart) {
+                charts.workloadChart.destroy();
+            }
+
+            const allActivities = tasks.flatMap(t => t.activities);
+            const workloadByPerson = {};
+
+            allActivities.forEach(activity => {
+                if (!workloadByPerson[activity.assignedTo]) {
+                    workloadByPerson[activity.assignedTo] = {
+                        total: 0,
+                        completed: 0
+                    };
+                }
+                workloadByPerson[activity.assignedTo].total++;
+                if (activity.status === 'completed') {
+                    workloadByPerson[activity.assignedTo].completed++;
+                }
+            });
+
+            const people = Object.keys(workloadByPerson);
+            const totalWork = people.map(p => workloadByPerson[p].total);
+            const completedWork = people.map(p => workloadByPerson[p].completed);
+
+            charts.workloadChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: people,
+                    datasets: [{
+                        label: 'Total Activities',
+                        data: totalWork,
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Completed',
+                        data: completedWork,
+                        backgroundColor: 'rgba(76, 175, 80, 0.8)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTrendChart() {
+            const ctx = document.getElementById('trendChart');
+            
+            if (charts.trendChart) {
+                charts.trendChart.destroy();
+            }
+
+            const dates = [];
+            const completed = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                dates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                
+                const allActivities = tasks.flatMap(t => t.activities);
+                const completedCount = allActivities.filter(a => {
+                    return a.status === 'completed';
+                }).length;
+                
+                completed.push(completedCount);
+            }
+
+            charts.trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Completed Activities',
+                        data: completed,
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTeamPerformance() {
+            const container = document.getElementById('teamPerformanceList');
+            const allActivities = tasks.flatMap(t => t.activities);
+            
+            const performanceByPerson = {};
+            
+            allActivities.forEach(activity => {
+                if (!performanceByPerson[activity.assignedTo]) {
+                    performanceByPerson[activity.assignedTo] = {
+                        total: 0,
+                        completed: 0,
+                        inProgress: 0,
+                        overdue: 0
+                    };
+                }
+                
+                performanceByPerson[activity.assignedTo].total++;
+                
+                if (activity.status === 'completed') {
+                    performanceByPerson[activity.assignedTo].completed++;
+                } else if (activity.status === 'in-progress') {
+                    performanceByPerson[activity.assignedTo].inProgress++;
+                }
+                
+                const days = calculateDays(activity.assignedDate, activity.deadline);
+                if (days.daysOverdue > 0 && activity.status !== 'completed') {
+                    performanceByPerson[activity.assignedTo].overdue++;
+                }
+            });
+
+            if (Object.keys(performanceByPerson).length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No team members assigned yet</p></div>';
+                return;
+            }
+
+            container.innerHTML = Object.keys(performanceByPerson).map(person => {
+                const stats = performanceByPerson[person];
+                const completionRate = Math.round((stats.completed / stats.total) * 100);
+                
+                return `
+                    <div class="team-member">
+                        <div class="member-info">
+                            <div class="member-name">${person}</div>
+                            <div class="member-stats">
+                                <span>📋 ${stats.total} tasks</span>
+                                <span>✅ ${stats.completed} completed</span>
+                                <span>🔄 ${stats.inProgress} in progress</span>
+                                <span style="color: #ef5350;">⚠️ ${stats.overdue} overdue</span>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #667eea;">${completionRate}%</div>
+                            <div style="font-size: 0.8rem; color: #666;">completion</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateUpcomingDeadlines() {
+            const container = document.getElementById('upcomingDeadlinesList');
+            const allActivities = tasks.flatMap(t => t.activities.map(a => ({...a, taskName: t.name})));
+            
+            const upcoming = allActivities
+                .filter(a => a.status !== 'completed')
+                .map(a => ({
+                    ...a,
+                    days: calculateDays(a.assignedDate, a.deadline)
+                }))
+                .filter(a => a.days.daysLeft <= 7 || a.days.daysOverdue > 0)
+                .sort((a, b) => {
+                    const daysA = a.days.daysOverdue > 0 ? -a.days.daysOverdue : a.days.daysLeft;
+                    const daysB = b.days.daysOverdue > 0 ? -b.days.daysOverdue : b.days.daysLeft;
+                    return daysA - daysB;
+                });
+
+            if (upcoming.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No upcoming deadlines in the next 7 days</p></div>';
+                return;
+            }
+
+            container.innerHTML = upcoming.slice(0, 5).map(item => {
+                let className = 'normal';
+                let status = '';
+                
+                if (item.days.daysOverdue > 0) {
+                    className = '';
+                    status = `⚠️ ${item.days.daysOverdue} days overdue`;
+                } else if (item.days.daysLeft <= 2) {
+                    className = 'soon';
+                    status = `🔥 ${item.days.daysLeft} days left`;
+                } else {
+                    status = `📅 ${item.days.daysLeft} days left`;
+                }
+                
+                return `
+                    <div class="deadline-item ${className}">
+                        <div style="font-weight: 600; margin-bottom: 5px;">${item.name}</div>
+                        <div style="font-size: 0.85rem; color: #666; margin-bottom: 3px;">Task: ${item.taskName}</div>
+                        <div style="font-size: 0.85rem; color: #666; margin-bottom: 3px;">Assigned to: ${item.assignedTo}</div>
+                        <div style="font-size: 0.85rem; font-weight: 600;">${status} - Due: ${new Date(item.deadline).toLocaleDateString()}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Initialize
+        applyFilters();
+        updateDashboard();
+        updatePersonFilter();
+    </script>
+</body>
+</html>
